@@ -1,0 +1,6 @@
+@Mettings.API_HostAddress = http://localhost:5167
+
+GET {{Mettings.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

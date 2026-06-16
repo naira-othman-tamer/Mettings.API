@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Mettings.API/Mettings.API.csproj" />
+  <Project Path="Mettings.Worker/Mettings.Worker.csproj" />
+</Solution>
