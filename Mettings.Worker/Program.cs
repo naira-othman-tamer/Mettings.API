@@ -10,10 +10,13 @@ namespace Mettings.Worker
         {
             var builder = Host.CreateApplicationBuilder(args);
             builder.Services.AddHostedService<Worker>();
+
             builder.Services.AddMassTransit(x =>
             {
                 //1- Define Consumer for masstransiet that listen to queue
                 x.AddConsumer<NotifyRecipientsConsumer>();
+                x.AddConsumer<LogMeetingDetailsConsumer>();
+                x.AddConsumer<LogMeetingDetailsSecondaryConsumer>();
 
                 x.UsingRabbitMq((context, cfg) =>
                 {
@@ -27,6 +30,16 @@ namespace Mettings.Worker
                     cfg.ReceiveEndpoint("notify-recipients", e =>
                     {
                         e.ConfigureConsumer<NotifyRecipientsConsumer>(context);
+                    });
+
+                    cfg.ReceiveEndpoint("log-meeting-details", e =>
+                    {
+                        e.ConfigureConsumer<LogMeetingDetailsConsumer>(context);
+                    });
+
+                    cfg.ReceiveEndpoint("log-meeting-details-secondary", e =>
+                    {
+                        e.ConfigureConsumer<LogMeetingDetailsSecondaryConsumer>(context);
                     });
                 });
             });

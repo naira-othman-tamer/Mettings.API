@@ -12,11 +12,13 @@ namespace Mettings.API.Controllers
 
         private readonly ILogger<MeetingController> _logger;
         private readonly ISendEndpointProvider _sendEndPointProvider;
+        private readonly IPublishEndpoint _publishEndpoint;
 
-        public MeetingController(ILogger<MeetingController> logger, ISendEndpointProvider sendEndPointProvider)
+        public MeetingController(ILogger<MeetingController> logger, ISendEndpointProvider sendEndPointProvider, IPublishEndpoint publishEndpoint)
         {
             _logger = logger;
             _sendEndPointProvider = sendEndPointProvider;
+            _publishEndpoint = publishEndpoint;
         }
 
         [HttpPost]
@@ -38,9 +40,31 @@ namespace Mettings.API.Controllers
                     "Test2@gmail.com",
                     "Test3@gmail.com"
                 },
-                ScheduledDate = DateTime.UtcNow.AddDays(1)
+                ScheduledTime = DateTime.UtcNow
             
             });
+
+            // Logic to create a meeting
+            return Ok("Meeting Schedualed successfully.");
+        }
+    
+        [HttpPost]
+        public async Task<IActionResult> PublishMeeting()
+        {
+            //apply Validation And AddMeeting 
+            await Task.CompletedTask;
+
+           await _publishEndpoint.Publish<MeetingScheduledMessage>(new 
+            {
+               MeetingID = Guid.NewGuid(),
+               ParticipantEmails = new List<string>
+                {
+                    "Test1@gmail.com",
+                    "Test2@gmail.com",
+                    "Test3@gmail.com"
+                },
+               ScheduledTime = DateTime.UtcNow
+           });
 
             // Logic to create a meeting
             return Ok("Meeting Schedualed successfully.");
@@ -49,5 +73,8 @@ namespace Mettings.API.Controllers
 
     public class MeetingDto
     {
+        public string Title { get; set; }
+        public DateTime ScheduledTime { get; set; }
+        public List<string> ParticipantEmails { get; set; }
     }
 }
