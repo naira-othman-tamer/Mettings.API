@@ -20,7 +20,7 @@ namespace Mettings.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SchedhualMeeting([FromBody] MeetingDto meeting)
+        public async Task<IActionResult> ScheduleMeeting([FromBody] MeetingDto meeting)
         {
             //apply Validation And AddMeeting 
             await Task.CompletedTask;
