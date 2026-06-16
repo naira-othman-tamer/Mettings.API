@@ -1,36 +1,53 @@
 
+using MassTransit;
+using Mettings.Worker.Consumers;
+
 namespace Mettings.Worker
 {
     public class Program
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            var builder = Host.CreateApplicationBuilder(args);
+            builder.Services.AddHostedService<Worker>();
 
-            // Add services to the container.
-
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
-
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            builder.Services.AddMassTransit(x =>
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+                //1- Define Consumer for masstransiet that listen to queue
+                x.AddConsumer<NotifyRecipientsConsumer>();
+                x.AddConsumer<LogMeetingDetailsConsumer>();
+                x.AddConsumer<LogMeetingDetailsSecondaryConsumer>();
 
-            app.UseHttpsRedirection();
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host("rabbitmq://localhost", h =>
+                    {
+                        h.Username("guest");
+                        h.Password("guest");
+                    });
 
-            app.UseAuthorization();
+                    //2- Configure the endpoint to listen to the queue
+                    cfg.ReceiveEndpoint("notify-recipients", e =>
+                    {
+                        e.ConfigureConsumer<NotifyRecipientsConsumer>(context);
+                    });
+
+                    cfg.ReceiveEndpoint("log-meeting-details", e =>
+                    {
+                        e.ConfigureConsumer<LogMeetingDetailsConsumer>(context);
+                    });
+
+                    cfg.ReceiveEndpoint("log-meeting-details-secondary", e =>
+                    {
+                        e.ConfigureConsumer<LogMeetingDetailsSecondaryConsumer>(context);
+                    });
+                });
+            });
 
 
-            app.MapControllers();
+           var host = builder.Build();
 
-            app.Run();
+            host.Run();
         }
     }
 }

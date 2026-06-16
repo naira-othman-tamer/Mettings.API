@@ -1,6 +1,23 @@
 @Mettings.API_HostAddress = http://localhost:5167
 
-GET {{Mettings.API_HostAddress}}/weatherforecast/
+### Request 1
+post {{Mettings.API_HostAddress}}/Meeting/ScheduleMeeting
+Content-Type : application/json
 Accept: application/json
+{
+  "participantEmails" : [ "Test1@gmail.com" , "Test2@gmail.com" ],
+  "scheduledTime" : "2024-06-19T12:00:00Z"  
+},
+
+### Request 2
+post {{Mettings.API_HostAddress}}/Meeting/PublishMeeting
+Content-Type : application/json
+Accept: application/json
+{
+  "participantEmails" : [ "Test1@gmail.com" , "Test2@gmail.com" ],
+  "scheduledTime" : "2024-06-19T12:00:00Z"  
+}
+
+
 
 ###
