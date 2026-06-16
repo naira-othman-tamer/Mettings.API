@@ -54,7 +54,7 @@ namespace Mettings.API.Controllers
             //apply Validation And AddMeeting 
             await Task.CompletedTask;
 
-           await _publishEndpoint.Publish<MeetingScheduledMessage>(new 
+           await _publishEndpoint.Publish<IMeetingScheduledMessage>(new 
             {
                MeetingID = Guid.NewGuid(),
                ParticipantEmails = new List<string>

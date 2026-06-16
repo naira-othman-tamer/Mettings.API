@@ -1,6 +1,6 @@
 ﻿namespace Mettings.API.Messages
 {
-    public interface MeetingScheduledMessage
+    public interface IMeetingScheduledMessage
     {
         public Guid MeetingID { get; set; }
         public List<string> ParticipantEmails { get; set; }

@@ -3,9 +3,9 @@ using Mettings.API.Messages;
 
 namespace Mettings.Worker.Consumers
 {
-    public class LogMeetingDetailsSecondaryConsumer : IConsumer<MeetingScheduledMessage>
+    public class LogMeetingDetailsSecondaryConsumer : IConsumer<IMeetingScheduledMessage>
     {
-        public async Task Consume(ConsumeContext<MeetingScheduledMessage> context)
+        public async Task Consume(ConsumeContext<IMeetingScheduledMessage> context)
         {
             var command = context.Message;
             Console.WriteLine($"Notifying Recipinets for Meeting ID: {command.MeetingID}");
