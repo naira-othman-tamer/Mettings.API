@@ -17,6 +17,14 @@ Accept: application/json
   "participantEmails" : [ "Test1@gmail.com" , "Test2@gmail.com" ],
   "scheduledTime" : "2024-06-19T12:00:00Z"  
 }
+### Request 3
+post {{Mettings.API_HostAddress}}/Meeting/ScheduleMeetingUsingOutbox
+Content-Type : application/json
+Accept: application/json
+{
+  "participantEmails" : [ "Test1@gmail.com" , "Test2@gmail.com" ],
+  "scheduledTime" : "2024-06-19T12:00:00Z"  
+}
 
 
 
