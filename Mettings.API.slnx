@@ -1,4 +1,6 @@
 <Solution>
+  <Project Path="Meetings.Domain/Meetings.Domain.csproj" Id="06dcc271-a7f6-4e6a-804b-b69670c7e811" />
+  <Project Path="Meetings.Infrastructure/Meetings.Infrastructure.csproj" Id="43e65682-f0ac-462e-8d6f-e8a0789510cb" />
   <Project Path="Mettings.API/Mettings.API.csproj" />
   <Project Path="Mettings.Worker/Mettings.Worker.csproj" />
   <Project Path="SharedMessages/SharedMessages.csproj" />

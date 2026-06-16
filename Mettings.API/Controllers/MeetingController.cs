@@ -1,6 +1,8 @@
 using MassTransit;
+using Meetings.Domain;
 using Mettings.API.Messages;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Mettings.API.Controllers
 {
@@ -22,10 +24,8 @@ namespace Mettings.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ScheduleMeeting([FromBody] MeetingDto meeting)
+        public async Task<IActionResult> ScheduleMeeting([FromBody] MeetingDto meetingDto)
         {
-            //apply Validation And AddMeeting 
-            await Task.CompletedTask;
 
             //prepare queue 
             var endPoint = await _sendEndPointProvider.GetSendEndpoint(new Uri("queue:notify-recipients"));
@@ -46,6 +46,38 @@ namespace Mettings.API.Controllers
 
             // Logic to create a meeting
             return Ok("Meeting Schedualed successfully.");
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> ScheduleMeetingUsingOutbox([FromBody] MeetingDto meetingDto)
+        {
+            //create A new Meeting Entity
+            var meeting = new Meeting
+            {
+                Id = Guid.NewGuid(),
+                ScheduledTime = DateTime.UtcNow,
+                ParticipantEmails = string.Join(",", meetingDto.ParticipantEmails)
+            };
+
+            //save to Database
+            //_dbContext.Meetings.Add(meeting);
+            //await _dbContext.SaveChangesAsync();
+
+            //var command = new NotifyReceipientsMessage
+            //{
+            //    MeetingId = meeting.Id,
+            //    ParticipantEmails = meeting.ParticipantEmails.Split(","),
+            //    ScheduledTime = meeting.ScheduledTime
+            //};
+
+            ////prepare queue 
+            //var endPoint = await _sendEndPointProvider.GetSendEndpoint(new Uri("queue:notify-recipients"));
+
+            //await endPoint.Send(command);
+
+            // Logic to create a meeting
+            return Ok(new { message = "Meeting scheduled successfully." });
         }
     
         [HttpPost]
