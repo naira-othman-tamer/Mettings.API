@@ -19,8 +19,9 @@ namespace Mettings.API.Controllers
         public async Task<IActionResult> ScedhualMeeting([FromBody] MeetingDto meeting)
         {
             //apply Validation And AddMeeting 
+            await Task.CompletedTask;
             // Logic to create a meeting
-            return Ok("Meeting created successfully.");
+            return Ok("Meeting Schedualed successfully.");
         }
     }
 
