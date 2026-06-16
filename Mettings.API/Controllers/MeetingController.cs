@@ -1,5 +1,6 @@
 using MassTransit;
 using Meetings.Domain;
+using Meetings.Infrastructure.Data;
 using Mettings.API.Messages;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,17 +11,17 @@ namespace Mettings.API.Controllers
     [Route("[controller]/[action]")]
     public class MeetingController : ControllerBase
     {
-      
-
         private readonly ILogger<MeetingController> _logger;
         private readonly ISendEndpointProvider _sendEndPointProvider;
         private readonly IPublishEndpoint _publishEndpoint;
+        private readonly AppDbContext _dbContext;
 
-        public MeetingController(ILogger<MeetingController> logger, ISendEndpointProvider sendEndPointProvider, IPublishEndpoint publishEndpoint)
+        public MeetingController(ILogger<MeetingController> logger, ISendEndpointProvider sendEndPointProvider, IPublishEndpoint publishEndpoint, AppDbContext dbContext)
         {
             _logger = logger;
             _sendEndPointProvider = sendEndPointProvider;
             _publishEndpoint = publishEndpoint;
+            _dbContext = dbContext;
         }
 
         [HttpPost]
@@ -52,34 +53,50 @@ namespace Mettings.API.Controllers
         [HttpPost]
         public async Task<IActionResult> ScheduleMeetingUsingOutbox([FromBody] MeetingDto meetingDto)
         {
-            //create A new Meeting Entity
-            var meeting = new Meeting
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
             {
-                Id = Guid.NewGuid(),
-                ScheduledTime = DateTime.UtcNow,
-                ParticipantEmails = string.Join(",", meetingDto.ParticipantEmails)
-            };
+                //create A new Meeting Entity
+                var meeting = new Meeting
+                {
+                    Id = Guid.NewGuid(),
+                    ScheduledTime = DateTime.UtcNow,
+                    ParticipantEmails = string.Join(",", meetingDto.ParticipantEmails)
+                };
 
-            //save to Database
-            //_dbContext.Meetings.Add(meeting);
-            //await _dbContext.SaveChangesAsync();
+                //save to Database
+                _dbContext.Meetings.Add(meeting);
+                await _dbContext.SaveChangesAsync();
 
-            //var command = new NotifyReceipientsMessage
-            //{
-            //    MeetingId = meeting.Id,
-            //    ParticipantEmails = meeting.ParticipantEmails.Split(","),
-            //    ScheduledTime = meeting.ScheduledTime
-            //};
 
-            ////prepare queue 
-            //var endPoint = await _sendEndPointProvider.GetSendEndpoint(new Uri("queue:notify-recipients"));
+                // prepare event data
+                var command = new NotifyRecipientsMessage
+                {
+                    MeetingID = meeting.Id,
+                    ParticipantEmails = meeting.ParticipantEmails.Split(",").ToList(),
+                    ScheduledTime = meeting.ScheduledTime
+                };
 
-            //await endPoint.Send(command);
+                //prepare queue 
+                var endPoint = await _sendEndPointProvider.GetSendEndpoint(new Uri("queue:notify-recipients"));
 
-            // Logic to create a meeting
-            return Ok(new { message = "Meeting scheduled successfully." });
+                await endPoint.Send(command);
+                await _dbContext.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                return Ok(new { message = "Meeting scheduled successfully." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while scheduling meeting.");
+                await transaction.RollbackAsync();
+                return StatusCode(500, ex.Message);
+            }
         }
     
+
+
         [HttpPost]
         public async Task<IActionResult> PublishMeeting()
         {
@@ -103,6 +120,8 @@ namespace Mettings.API.Controllers
         }
     }
 
+
+
     public class MeetingDto
     {
         public string Title { get; set; }
@@ -110,3 +129,4 @@ namespace Mettings.API.Controllers
         public List<string> ParticipantEmails { get; set; }
     }
 }
+

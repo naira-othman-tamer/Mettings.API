@@ -16,8 +16,17 @@ namespace Mettings.API
                    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddControllers();
+
             builder.Services.AddMassTransit(x =>
             {
+                x.AddEntityFrameworkOutbox<AppDbContext>(o =>
+                {
+                    o.UseSqlServer();
+                    o.UseBusOutbox();
+                    o.QueryDelay = TimeSpan.FromSeconds(2); // Delay befor querying the outbox table for pending messages to be sent to message broker
+                });
+
+                // Configure MassTransit to use RabbitMQ as the message broker
                 x.UsingRabbitMq((context, cfg) =>
                 {
                     cfg.Host("rabbitmq://localhost", h =>
@@ -29,7 +38,7 @@ namespace Mettings.API
             });
         
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
