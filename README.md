@@ -1,6 +1,3 @@
-Show more
-7:51 PM
-markdown
 # 🐇 MassTransit + RabbitMQ Messaging Project
 
 A .NET 8 project demonstrating messaging patterns using MassTransit with RabbitMQ, running via Docker.
